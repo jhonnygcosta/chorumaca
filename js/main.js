@@ -26,27 +26,35 @@
 
   // ---------- layout responsivo ----------
 
+  // A "câmera" da casa: o mundo tem pelo menos LARGURA_CENA unidades de largura, pra o
+  // cômodo inteiro caber na tela em pé, e a Chorumaçã adulta ocupa uns 80% da altura livre
+  // entre a faixa do cômodo e os botões (no celular deitado, os botões vão pra direita).
+  const LARGURA_CENA = 680;
+  const ALTURA_ADULTA = 236 * 1.4;
+
   function layout() {
     const w = window.innerWidth, h = window.innerHeight;
     G.dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = Math.round(w * G.dpr);
     cv.height = Math.round(h * G.dpr);
-    let s = h / 1000;
-    if (w / s < 460) s = w / 460;
+    const acoesEl = $('acoes');
+    const coluna = getComputedStyle(acoesEl).flexDirection === 'column';
+    const acoes = acoesEl.getBoundingClientRect();
+    const faixa = $('faixa').getBoundingClientRect();
+    const altAcoes = coluna ? 0 : (acoes.height > 10 ? h - acoes.top : 110);
+    const larguraColuna = coluna && acoes.width > 10 ? Math.max(0, w - acoes.left) : 0;
+    const topoLivre = faixa.bottom > 10 ? faixa.bottom + 6 : 200;
+    const baseCss = h - altAcoes - (coluna ? Math.max(14, h * 0.04) : Math.max(44, h * 0.075));
+    const disponivel = Math.max(80, baseCss - topoLivre);
+    const s = Math.max(0.2, Math.min((disponivel * 0.8) / ALTURA_ADULTA, (w - larguraColuna) / LARGURA_CENA, 1));
     G.s = s;
     const W = w / s, H = h / s;
-    const acoes = $('acoes').getBoundingClientRect();
-    const faixa = $('faixa').getBoundingClientRect();
-    const altAcoes = acoes.height > 10 ? h - acoes.top : 110;
-    const topoLivre = faixa.bottom > 10 ? faixa.bottom + 6 : 200;
-    const baseCss = h - altAcoes - Math.max(64, h * 0.11);
-    const disponivel = (baseCss - topoLivre) / s;
     G.L = {
       W, H,
-      cx: W / 2,
+      cx: (w - larguraColuna) / 2 / s,
       base: baseCss / s,
       chao: baseCss / s - 120,
-      kMax: U.clamp(disponivel / 236, 0.6, 1.4),
+      kMax: 1.4,
     };
   }
 

@@ -102,7 +102,7 @@
       '<path d="M34 30 L4 30 L16 46 L4 64 L40 64 Z" fill="#BBCCE2" stroke="#272322" stroke-width="3.5" stroke-linejoin="round"></path>' +
       '<path d="M266 30 L296 30 L284 46 L296 64 L260 64 Z" fill="#BBCCE2" stroke="#272322" stroke-width="3.5" stroke-linejoin="round"></path>' +
       '<path d="M22 16 Q150 0 278 16 L278 62 Q150 46 22 62 Z" fill="url(#listras)" stroke="#272322" stroke-width="4" stroke-linejoin="round"></path>' +
-      '<text x="150" y="44" text-anchor="middle" dominant-baseline="middle">' + nome + '</text>' +
+      '<text x="150" y="42" text-anchor="middle">' + nome + '</text>' +
       '</svg>';
     f.classList.remove('entra');
     void f.offsetWidth;
@@ -157,6 +157,7 @@
       loja.onclick = aoLoja || null;
       this.preencher(itens);
       $('gaveta').hidden = false;
+      $('app').classList.add('com-gaveta');
       this.aberta = true;
     },
     preencher(itens) {
@@ -189,6 +190,7 @@
     },
     fechar() {
       $('gaveta').hidden = true;
+      $('app').classList.remove('com-gaveta');
       this.aberta = false;
     },
   };
