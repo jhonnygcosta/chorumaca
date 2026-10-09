@@ -19,6 +19,7 @@
   ui.montar = function () {
     $('ic-moeda').src = img('i_moeda');
     $('ic-config').src = img('engrenagem');
+    document.documentElement.style.setProperty('--img-estrela', 'url(' + img('i_estrela', 48) + ')');
     $('ic-chat').src = img('chat');
     $('ic-sair').src = img('fechar');
     $('painel-fechar').style.backgroundImage = 'url(' + img('fechar') + ')';
@@ -60,27 +61,73 @@
     $('anel-xp').setAttribute('stroke-dashoffset', CIRC_XP * (1 - frac));
     $('nivel').setAttribute('aria-label', maximo ? 'Nível ' + s.nivel + ', o máximo' : 'Nível ' + s.nivel + ', ' + Math.floor(frac * 100) + '% para o próximo');
     document.querySelectorAll('.stat').forEach((el) => {
-      const v = s.status[el.dataset.k];
+      const k = el.dataset.k;
+      const v = s.status[k];
       const anel = el.querySelector('.valor-anel');
       anel.setAttribute('stroke-dashoffset', CIRC * (1 - v / 100));
-      const carregando = el.dataset.k === 'energia' && s.dormindo;
+      const carregando = k === 'energia' && s.dormindo;
+      const cheio = v >= 99.5;
       el.classList.toggle('alerta', v < 50 && v >= 25 && !carregando);
       el.classList.toggle('critico', v < 25 && !carregando);
-      el.setAttribute('aria-label', STATUS.find((x) => x.k === el.dataset.k).rotulo + ' ' + Math.round(v) + '%' + (carregando ? ', carregando' : ''));
-      if (el.dataset.k === 'energia') carregar(el, carregando);
+      el.classList.toggle('cheio', cheio);
+      el.setAttribute('aria-label', STATUS.find((x) => x.k === k).rotulo + ' ' + Math.round(v) + '%' + (carregando ? (cheio ? ', carregada' : ', carregando') : ''));
+      if (k === 'energia') carregar(el, carregando, cheio);
+      // comemora quando chega a 100%; só volta a comemorar depois de cair abaixo de 95%
+      if (!(k in armado)) armado[k] = !cheio;
+      else {
+        if (cheio && armado[k]) { armado[k] = false; comemorar(el, k); }
+        if (v < 95) armado[k] = true;
+      }
     });
   };
 
+  const armado = {};
+  // Depois de recomeçar ou recarregar o estado, não comemora o que já começou cheio.
+  ui.zerarComemoracoes = function () {
+    Object.keys(armado).forEach((k) => delete armado[k]);
+  };
+
+  // Se a casa estiver escondida (num minijogo), a comemoração espera a volta pra casa.
+  let festasPendentes = [];
+  function comemorar(el, k) {
+    if ($('hud').hidden) {
+      if (!festasPendentes.includes(k)) festasPendentes.push(k);
+      return;
+    }
+    el.classList.remove('festa');
+    void el.offsetWidth;
+    el.classList.add('festa');
+    const bola = el.querySelector('.bola');
+    for (let i = 0; i < 9; i++) {
+      const f = document.createElement('i');
+      f.className = 'faisca';
+      const a = (i / 9) * Math.PI * 2 + Math.random() * 0.4;
+      const d = 34 + Math.random() * 18;
+      f.style.setProperty('--dx', (Math.cos(a) * d).toFixed(1) + 'px');
+      f.style.setProperty('--dy', (Math.sin(a) * d).toFixed(1) + 'px');
+      f.style.animationDelay = (Math.random() * 0.08).toFixed(2) + 's';
+      bola.appendChild(f);
+      setTimeout(() => f.remove(), 1000);
+    }
+    setTimeout(() => el.classList.remove('festa'), 1200);
+    CH.ev.emit('statusCompleto', STATUS.find((x) => x.k === k));
+  }
+
   // Energia com a Chorú dormindo: vira uma bateria no carregador, enchendo em animação.
   let bateriaTimer = null;
-  function carregar(el, sim) {
-    if (sim === el.classList.contains('carregando')) return;
+  function carregar(el, sim, cheio) {
+    const modo = sim ? (cheio ? 'cheia' : 'carregando') : 'normal';
+    if (el.dataset.bateria === modo) return;
+    el.dataset.bateria = modo;
     el.classList.toggle('carregando', sim);
     const icone = el.querySelector('img');
     const rotulo = el.querySelector('span');
     clearInterval(bateriaTimer);
     bateriaTimer = null;
-    if (sim) {
+    if (sim && cheio) {
+      rotulo.textContent = 'Carregada';
+      icone.src = img('bateria3');
+    } else if (sim) {
       rotulo.textContent = 'Carregando';
       let q = 0;
       const quadro = () => { q = (q % 3) + 1; icone.src = img('bateria' + q); };
@@ -280,6 +327,13 @@
   ui.casaVisivel = function (sim) {
     ['hud', 'faixa', 'seta-esq', 'seta-dir', 'acoes'].forEach((id) => { $(id).hidden = !sim; });
     if (!sim) { ui.gaveta.fechar(); ui.esconderBalao(); }
+    if (sim && festasPendentes.length) {
+      const lista = festasPendentes.splice(0);
+      setTimeout(() => lista.forEach((k) => {
+        const el = document.querySelector('.stat[data-k="' + k + '"]');
+        if (el && CH.estado.s.status[k] >= 99.5) comemorar(el, k);
+      }), 600);
+    }
   };
 
   // Elementos reutilizáveis dos painéis.

@@ -212,6 +212,14 @@
       [72, 76, 79].forEach((m, i) => nota(midi(m), t + i * 0.09, 0.2, { tipo: 'triangle', vol: 0.22 }));
     },
     tique() { const t = agora(); nota(1600, t, 0.02, { tipo: 'square', vol: 0.04 }); },
+    // status chegou a 100%
+    completo() {
+      const t = agora();
+      [79, 83, 86, 91].forEach((m, i) => nota(midi(m), t + i * 0.07, 0.2, { tipo: 'triangle', vol: 0.2 }));
+      [91, 95, 98].forEach((m, i) => nota(midi(m), t + 0.3 + i * 0.05, 0.16, { tipo: 'square', vol: 0.05, filtro: { f: 5000 } }));
+      nota(midi(103), t + 0.45, 0.55, { tipo: 'sine', vol: 0.12, vibrato: 7 });
+      ruido(t + 0.05, 0.6, { f: 7500, q: 0.8, vol: 0.05, tipo: 'highpass' });
+    },
     // Tetris
     mover() { const t = agora(); nota(880, t, 0.025, { tipo: 'square', vol: 0.035, filtro: { f: 2500 } }); },
     girar() { const t = agora(); nota(560, t, 0.06, { tipo: 'square', vol: 0.06, ate: 840, filtro: { f: 2600 } }); },

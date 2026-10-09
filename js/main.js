@@ -427,6 +427,19 @@
   // ---------- eventos do estado ----------
 
   CH.ev.on('status', () => ui.atualizar());
+  // um status chegou a 100%: som, aviso e a Chorú comemora
+  CH.ev.on('statusCompleto', (st) => {
+    if (!G.emCasa || CH.jogos.ativo) return;
+    CH.som.completo();
+    const dormindo = E.s.dormindo && st.k === 'energia';
+    ui.toast(dormindo ? 'Energia carregada! 100%' : st.rotulo + ' 100%!', dormindo ? 'bateria3' : st.icone);
+    if (E.s.dormindo) return;
+    G.choru.pular(0.55);
+    G.expressao('gargalhada', 1.5);
+    G.particulas('estrela', 7);
+    G.particulas('brilho', 5);
+    if (U.chance(0.5)) setTimeout(() => G.falar('Aí sim!'), 250);
+  });
   CH.ev.on('moedas', (n) => { ui.atualizar(); if (n > 0) CH.som.moeda(); });
   CH.ev.on('xp', () => ui.atualizar());
   CH.ev.on('inventario', () => { if (ui.gaveta.aberta && E.s.comodo === 'cozinha') { /* a gaveta se atualiza na ação */ } });
@@ -453,7 +466,7 @@
     CH.som.puf();
     CH.comodos.atualizarAcoes();
   });
-  CH.ev.on('estado', () => { G.aplicarRoupas(); ui.atualizar(); if (G.emCasa) entrarComodo(E.s.comodo); });
+  CH.ev.on('estado', () => { G.aplicarRoupas(); ui.zerarComemoracoes(); ui.atualizar(); if (G.emCasa) entrarComodo(E.s.comodo); });
 
   // ---------- configurações e créditos ----------
 
