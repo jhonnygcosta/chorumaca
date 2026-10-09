@@ -500,7 +500,7 @@
     });
     f(ctx, null, (c) => { c.moveTo(50, 48); c.lineTo(50, 12); c.moveTo(38, 24); c.lineTo(50, 10); c.lineTo(62, 24); }, 6);
   };
-  // Ícone do Empilha Chorú: um T roxo encaixado num L rosa.
+  // Ícone do Tetris: um T roxo encaixado num L rosa.
   DES.blocos = (ctx) => {
     const b = (x, y, cor) => {
       f(ctx, cor, (c) => U.ret(c, x, y, 26, 26, 6), 3.6);

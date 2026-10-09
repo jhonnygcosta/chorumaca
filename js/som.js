@@ -212,7 +212,7 @@
       [72, 76, 79].forEach((m, i) => nota(midi(m), t + i * 0.09, 0.2, { tipo: 'triangle', vol: 0.22 }));
     },
     tique() { const t = agora(); nota(1600, t, 0.02, { tipo: 'square', vol: 0.04 }); },
-    // Empilha Chorú
+    // Tetris
     mover() { const t = agora(); nota(880, t, 0.025, { tipo: 'square', vol: 0.035, filtro: { f: 2500 } }); },
     girar() { const t = agora(); nota(560, t, 0.06, { tipo: 'square', vol: 0.06, ate: 840, filtro: { f: 2600 } }); },
     travar() {

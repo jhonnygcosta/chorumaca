@@ -1,4 +1,5 @@
-// Empilha Chorú: o jogo de blocos clássico, com a cara da Chorumaçã.
+// Tetris da Chorú: o jogo de blocos clássico, com a cara da Chorumaçã.
+// O nome interno continua "empilha" pra não zerar o recorde salvo de quem já jogou.
 // Regras do clássico: tabuleiro 10×20, 7 peças, giro com ajuste nas paredes (SRS),
 // próxima peça, níveis a cada 10 linhas e pontuação 40/100/300/1200 × (nível + 1).
 (function (CH) {
@@ -387,7 +388,7 @@
   }
 
   J.registrar('empilha', {
-    titulo: 'Empilha Chorú',
+    titulo: 'Tetris',
     rotuloPontos: 'Pontos',
     gastoEnergia: 6,
     divisorDiversao: 120,
@@ -788,8 +789,7 @@
     c.fillStyle = 'rgba(255,253,248,0.82)';
     c.fillRect(g.x0, g.y0, g.bw, g.bh);
     const tam = Math.max(20, g.bw * 0.13);
-    CH.cenarios.texto(c, 'EMPILHA', cx, g.y0 + g.bh * 0.14, tam, '#F24B64', '#FFFFFF', -0.06);
-    CH.cenarios.texto(c, 'CHORÚ', cx, g.y0 + g.bh * 0.14 + tam * 0.95, tam * 1.1, '#F24B64', '#FFFFFF', -0.06);
+    CH.cenarios.texto(c, 'TETRIS', cx, g.y0 + g.bh * 0.17, tam * 1.35, '#F24B64', '#FFFFFF', -0.06);
     // peças de enfeite
     const s = g.cel * 0.8;
     ['T', 'S', 'L'].forEach((tp, i) => {

@@ -50,10 +50,10 @@
         ];
       case 'sala':
         return [
+          { id: 'empilha', icone: 'blocos', rotulo: 'Tetris', toque: () => jogar('empilha') },
           { id: 'chuva', icone: 'chuva', rotulo: 'Chuva', toque: () => jogar('chuva') },
           { id: 'pulo', icone: 'pulo', rotulo: 'Pulo', toque: () => jogar('pulo') },
           { id: 'vr', icone: 'vr_icone', rotulo: 'Biruleibe', toque: () => jogar('biruleibe') },
-          { id: 'empilha', icone: 'blocos', rotulo: 'Empilha', toque: () => jogar('empilha') },
         ];
       case 'quintal':
         return [
@@ -387,7 +387,7 @@
     ui.painel('Fliperama', (c) => {
       c.appendChild(ui.el('p', '', 'Escolha um jogo. Cada um dá moedas conforme os pontos.'));
       const g = ui.el('div', 'grade');
-      [['chuva', 'chuva', 'Chuva de Comida'], ['pulo', 'pulo', 'Pulo da Maçã'], ['biruleibe', 'vr_icone', 'Biruleibe VR'], ['empilha', 'blocos', 'Empilha Chorú']].forEach(([id, ic, nome]) => {
+      [['empilha', 'blocos', 'Tetris'], ['chuva', 'chuva', 'Chuva de Comida'], ['pulo', 'pulo', 'Pulo da Maçã'], ['biruleibe', 'vr_icone', 'Biruleibe VR']].forEach(([id, ic, nome]) => {
         const p = ui.el('div', 'produto');
         p.innerHTML = '<img alt="" src="' + img(ic, 128) + '"><div class="nome">' + nome + '</div><div class="efeito">Recorde: ' + U.num(E.s.recordes[id] || 0) + '</div>';
         const b = ui.el('button', 'preco', 'Jogar');
