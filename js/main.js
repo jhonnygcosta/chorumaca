@@ -510,11 +510,8 @@
     ui.painel('Créditos', (c) => {
       const d = ui.el('div', 'creditos');
       d.innerHTML =
-        '<div class="duas"><img alt="Chorú e Defante" src="assets/jogo/medalha-04.webp"><img alt="Diogo Defante" src="assets/jogo/defante.webp"></div>' +
-        '<h3>Chorumaçã</h3><p>Personagem de Diogo Defante, o Papai.</p>' +
-        '<h3>Jogo</h3><p>Brabo Studio</p>' +
-        '<p>Obrigado às 102 pessoas que apoiaram a campanha no Catarse.</p>' +
-        '<p>I love your people!</p>';
+        '<img alt="Chorumaçã" src="assets/jogo/choru-01.webp">' +
+        '<h3>Chorumaçã</h3><p>Personagem de Diogo Defante, o Papai.</p>';
       c.appendChild(d);
     });
   }
