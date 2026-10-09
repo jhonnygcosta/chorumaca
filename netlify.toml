@@ -1,0 +1,11 @@
+# O Netlify monta o jogo a cada atualização no GitHub e publica só os arquivos do jogo.
+# Documentos, artes originais da campanha e arquivos de desenvolvimento ficam de fora do site.
+[build]
+  command = "python3 dev/montar.py"
+  publish = "dist/site"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

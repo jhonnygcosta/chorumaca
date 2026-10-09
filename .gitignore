@@ -1,0 +1,6 @@
+# gerados pelo dev/montar.py e dev/publicar.py
+dist/
+publicar/
+
+# configurações locais do Claude
+.claude/settings.local.json

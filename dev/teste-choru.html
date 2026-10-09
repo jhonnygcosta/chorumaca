@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Teste Chorú</title>
+<style>
+  body { margin: 0; background: #FFE7EB; font: 14px sans-serif; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="../js/util.js"></script>
+<script src="../js/dados.js"></script>
+<script src="../js/choru.js"></script>
+<script>
+  const cv = document.getElementById('c');
+  const W = 1200, H = 1100;
+  const dpr = 1;
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const ref = new Image(); ref.src = '../assets/catarse/choru-01.png';
+  const exps = ['deboche', 'feliz', 'gargalhada', 'esperando', 'susto', 'sono', 'dormindo', 'triste', 'doente', 'bravo', 'apertada', 'fome'];
+  const insts = exps.map((e) => { const i = CH.choru.criar(); i.expressao(e); i.update(1); i.update(1); return i; });
+  const extra = [
+    { pele: 'classica', cabeca: 'bone' }, { pele: 'classica', cabeca: 'fone' }, { pele: 'classica', olhos: 'oculos' },
+    { pele: 'verde', cabeca: 'laco' }, { pele: 'amor', cabeca: 'coroa' }, { pele: 'dourada', cabeca: 'chef', olhos: 'monoculo' },
+    { pele: 'pessego', cabeca: 'touca', olhos: 'vr' },
+  ];
+  const eInst = extra.map(() => { const i = CH.choru.criar(); i.update(1); return i; });
+  function quadro() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFE7EB'; ctx.fillRect(0, 0, W, H);
+    if (ref.complete) ctx.drawImage(ref, 10, 10, 240, 240);
+    const big = CH.choru.criar(); big.update(2);
+    big.desenhar(ctx, 390, 245, 1.1, {});
+    insts.forEach((i, n) => {
+      i.update(1 / 60);
+      const x = 80 + (n % 6) * 190, y = 470 + Math.floor(n / 6) * 210;
+      i.desenhar(ctx, x, y, 0.72, { dormindo: exps[n] === 'dormindo' });
+      ctx.fillStyle = '#272322'; ctx.fillText(exps[n], x - 30, y + 24);
+    });
+    eInst.forEach((i, n) => {
+      i.update(1 / 60);
+      const o = extra[n];
+      const x = 620 + (n % 4) * 150, y = 140 + Math.floor(n / 4) * 150;
+      i.desenhar(ctx, x, y, 0.5, o);
+    });
+    const s = CH.choru.criar(); s.sujeira = 1; s.doente = 0; s.mosquinhas = true; s.update(1);
+    s.desenhar(ctx, 300, 1040, 0.62, {});
+    const s2 = CH.choru.criar(); s2.doente = 1; s2.suor = true; s2.expressao('doente'); s2.update(1);
+    s2.desenhar(ctx, 520, 1040, 0.62, {});
+    const s3 = CH.choru.criar(); s3.espuma = [{x:-40,y:-20,r:14},{x:-20,y:-40,r:10},{x:10,y:40,r:16},{x:50,y:-30,r:12},{x:-70,y:30,r:12}]; s3.update(1);
+    s3.desenhar(ctx, 740, 1040, 0.62, {});
+  }
+  function grande() {
+    ctx.fillStyle = '#FFE7EB'; ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(ref, 0, 0, 560, 556);
+    const g = CH.choru.criar(); g.update(2);
+    g.desenhar(ctx, 840, 470, 2.25, {});
+  }
+  if (location.hash === '#grande') { ref.onload = grande; setTimeout(grande, 300); } else ref.onload = quadro;
+  if (location.hash !== '#grande') setTimeout(quadro, 300);
+</script>
+</body>
+</html>

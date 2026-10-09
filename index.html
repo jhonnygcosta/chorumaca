@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#F24B64">
+<meta name="description" content="Cuide da Chorumaçã: alimente, dê banho, ponha pra dormir, jogue e leve pra passear.">
+<title>Chorumaçã O Jogo!</title>
+<link rel="icon" href="assets/jogo/icone-64.png">
+<link rel="apple-touch-icon" href="assets/jogo/icone-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/fontes.css">
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="palco" aria-label="Casa da Chorú"></canvas>
+
+  <header id="hud">
+    <div class="hud-linha hud-topo">
+      <button id="btn-moedas" class="pilula moedas" type="button" aria-label="Moedas">
+        <img id="ic-moeda" alt=""><b id="txt-moedas">0</b>
+      </button>
+      <div class="pilula nivel" id="nivel" aria-label="Nível">
+        <svg viewBox="0 0 44 44" class="anel-nivel" aria-hidden="true">
+          <circle cx="22" cy="22" r="18" class="anel-fundo"></circle>
+          <circle cx="22" cy="22" r="18" class="anel-valor" id="anel-xp"></circle>
+        </svg>
+        <b id="txt-nivel">1</b>
+        <span id="txt-estagio">Choruzinha</span>
+      </div>
+      <button id="btn-config" class="btn-redondo pequeno" type="button" aria-label="Configurações"><img id="ic-config" alt=""></button>
+    </div>
+    <div id="status" class="hud-linha status"></div>
+  </header>
+
+  <div id="faixa" aria-live="polite"></div>
+
+  <button id="seta-esq" class="seta" type="button" aria-label="Cômodo anterior">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 L7 12 L15 20"></path></svg>
+  </button>
+  <button id="seta-dir" class="seta" type="button" aria-label="Próximo cômodo">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 L17 12 L9 20"></path></svg>
+  </button>
+
+  <div id="balao" hidden></div>
+  <div id="arrasto" hidden><img alt=""></div>
+
+  <div id="gaveta" hidden>
+    <div class="gaveta-topo"><span id="gaveta-titulo">Geladeira</span><button id="gaveta-loja" class="link" type="button">Comprar mais</button></div>
+    <div class="trilho" id="trilho"></div>
+  </div>
+
+  <nav id="acoes" aria-label="Ações do cômodo"></nav>
+
+  <div id="painel" hidden>
+    <div class="caixa" role="dialog" aria-modal="true" aria-labelledby="painel-titulo">
+      <header>
+        <h2 id="painel-titulo">Loja</h2>
+        <button id="painel-fechar" class="btn-fechar" type="button" aria-label="Fechar"></button>
+      </header>
+      <div class="corpo" id="painel-corpo"></div>
+    </div>
+  </div>
+
+  <div id="jogo" hidden>
+    <canvas id="tela-jogo"></canvas>
+    <div class="jogo-hud">
+      <button id="jogo-sair" class="btn-redondo pequeno" type="button" aria-label="Sair do jogo"><img id="ic-sair" alt=""></button>
+      <div class="pilula" id="jogo-pontos">0</div>
+      <div class="pilula" id="jogo-info"></div>
+    </div>
+    <div id="jogo-dica" hidden></div>
+  </div>
+
+  <div id="toast" aria-live="polite"></div>
+
+  <div id="abertura">
+    <img class="capa" src="assets/jogo/capa.webp" alt="">
+    <h1 class="titulo-capa" aria-label="Chorumaçã O Jogo!"><span class="t1">CHORUMAÇÃ</span><span class="t2">O JOGO!</span></h1>
+    <div class="abertura-rodape">
+      <button id="btn-jogar" type="button">Jogar</button>
+      <p>Chorumaçã é um personagem de Diogo Defante</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/util.js"></script>
+<script src="js/dados.js"></script>
+<script src="js/estado.js"></script>
+<script src="js/som.js"></script>
+<script src="js/choru.js"></script>
+<script src="js/desenhos.js"></script>
+<script src="js/cenarios.js"></script>
+<script src="js/interface.js"></script>
+<script src="js/comodos.js"></script>
+<script src="js/jogos/jogos.js"></script>
+<script src="js/jogos/chuva.js"></script>
+<script src="js/jogos/pulo.js"></script>
+<script src="js/jogos/biruleibe.js"></script>
+<script src="js/jogos/passeio.js"></script>
+<script src="js/jogos/empilha.js"></script>
+<script src="js/sincronia.js"></script>
+<script src="js/teste.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
