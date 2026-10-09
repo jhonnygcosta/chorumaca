@@ -7,6 +7,7 @@
   // Quanto cada status cai por hora.
   const QUEDA = { fome: 6, higiene: 4, energia: 5, diversao: 7 };
   const STATUS = ['fome', 'higiene', 'energia', 'diversao', 'saude'];
+  const NIVEL_MAX = 100;
 
   function novo() {
     const agora = Date.now();
@@ -224,9 +225,14 @@
     },
 
     ganharXP(n) {
+      if (s.nivel >= NIVEL_MAX) {
+        s.xp = 0;
+        CH.ev.emit('xp');
+        return false;
+      }
       s.xp += n;
       let subiu = false;
-      while (s.xp >= E.xpProximo()) {
+      while (s.nivel < NIVEL_MAX && s.xp >= E.xpProximo()) {
         s.xp -= E.xpProximo();
         s.nivel++;
         subiu = true;
@@ -234,9 +240,20 @@
         s.moedas += premio;
         CH.ev.emit('nivel', s.nivel, premio);
       }
+      if (s.nivel >= NIVEL_MAX) s.xp = 0;
       CH.ev.emit('xp');
       E.salvar();
       return subiu;
+    },
+
+    NIVEL_MAX,
+
+    // Vai direto pra um nível (ferramentas de teste). Não dá moedas.
+    definirNivel(n) {
+      s.nivel = U.clamp(Math.round(Number(n) || 1), 1, NIVEL_MAX);
+      s.xp = 0;
+      CH.ev.emit('xp');
+      E.salvar();
     },
 
     xpProximo() { return 50 * s.nivel; },

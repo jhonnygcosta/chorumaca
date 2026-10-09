@@ -4,6 +4,11 @@
   command = "python3 dev/montar.py"
   publish = "dist/site"
 
+# Funções do contador de pessoas online e do chat (/api/presenca e /api/chat)
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 [[headers]]
   for = "/*"
   [headers.values]

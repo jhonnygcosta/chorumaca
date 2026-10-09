@@ -581,6 +581,108 @@ img { max-width: 100%; }
 .resultado .ganhos span { display: inline-flex; align-items: center; gap: 4px; }
 .resultado .ganhos img { width: 28px; height: 28px; }
 
+/* ---------- chat e pessoas online ---------- */
+
+.btn-chat {
+  position: absolute;
+  left: calc(8px + env(safe-area-inset-left, 0px));
+  top: calc(50% - 120px);
+  z-index: 4;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: none; border: 0; padding: 0;
+}
+.btn-chat .bola {
+  position: relative;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--papel);
+  border: 3px solid var(--tinta);
+  box-shadow: var(--sombra);
+  display: grid; place-items: center;
+}
+.btn-chat .bola img { width: 34px; height: 34px; }
+.btn-chat:active .bola { transform: translateY(3px); box-shadow: 0 1px 0 var(--tinta); }
+.btn-chat.nova .bola::after {
+  content: '';
+  position: absolute; top: -4px; right: -4px;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--rosa); border: 2.5px solid var(--tinta);
+}
+.btn-chat .online {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--papel);
+  border: 2.5px solid var(--tinta);
+  border-radius: 999px;
+  padding: 2px 8px 1px;
+  font-size: 14px; line-height: 1.1;
+  white-space: nowrap;
+}
+.btn-chat .online i { width: 9px; height: 9px; border-radius: 50%; background: #3BB273; border: 1.5px solid var(--tinta); }
+.btn-chat .online b { font-weight: 400; }
+
+input, textarea { -webkit-user-select: text; user-select: text; touch-action: auto; }
+.campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.campo > span { font-size: 20px; }
+.campo input {
+  width: 100%;
+  font-family: var(--fonte-ui); font-size: 19px;
+  padding: 8px 12px;
+  border: 2.5px solid var(--tinta); border-radius: 14px;
+  background: #FFFFFF; color: var(--tinta);
+}
+.campo input:focus, .chat-form input:focus, .ir-nivel input:focus { outline: 3px solid var(--petroleo); outline-offset: 1px; }
+.cidade-atual { margin: 0; font-family: var(--fonte-titulo); font-size: 18px; }
+.nota { font-size: 15px; color: #6B6360; margin: 6px 0 0; line-height: 1.2; }
+.aviso-form { text-align: center; min-height: 1.2em; margin-top: 10px; }
+
+.chat-topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 17px; }
+.chat-quem { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-lista {
+  display: flex; flex-direction: column; gap: 8px;
+  height: min(46vh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 8px;
+  background: var(--creme);
+  border: 2.5px solid var(--tinta);
+  border-radius: 16px;
+}
+.chat-vazio { margin: auto; text-align: center; color: #6B6360; }
+.msg {
+  align-self: flex-start;
+  max-width: 88%;
+  background: #FFFFFF;
+  border: 2px solid var(--tinta);
+  border-radius: 14px 14px 14px 4px;
+  padding: 5px 10px 6px;
+}
+.msg.minha { align-self: flex-end; background: var(--limao); border-radius: 14px 14px 4px 14px; }
+.msg-cab { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; line-height: 1.1; }
+.msg-cab b { font-family: var(--fonte-titulo); font-weight: 400; font-size: 15px; }
+.msg-cidade { color: #4B6765; font-size: 14px; }
+.msg-hora { color: #8A827E; font-size: 12px; margin-left: auto; font-variant-numeric: tabular-nums; }
+.msg-texto { margin: 2px 0 0; font-size: 18px; line-height: 1.15; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
+.chat-form { display: flex; gap: 8px; margin-top: 10px; }
+.chat-form input {
+  flex: 1; min-width: 0;
+  font-family: var(--fonte-ui); font-size: 18px;
+  padding: 8px 14px;
+  border: 2.5px solid var(--tinta); border-radius: 999px;
+  background: #FFFFFF; color: var(--tinta);
+}
+.chat-form .botao { min-height: 44px; padding: 4px 16px 2px; font-size: 19px; }
+
+.ir-nivel { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 2px; font-size: 20px; }
+.ir-nivel input {
+  width: 90px;
+  font-family: var(--fonte-titulo); font-size: 20px;
+  padding: 6px 10px;
+  border: 2.5px solid var(--tinta); border-radius: 12px;
+  background: #FFFFFF; color: var(--tinta);
+}
+.ir-nivel .botao { min-height: 44px; padding: 4px 18px 2px; }
+
 /* ---------- versão de teste ---------- */
 
 .versao { text-align: center; font-size: 16px; color: #6B6360; margin-top: 12px; }

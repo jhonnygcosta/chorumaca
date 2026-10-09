@@ -19,6 +19,7 @@
   ui.montar = function () {
     $('ic-moeda').src = img('i_moeda');
     $('ic-config').src = img('engrenagem');
+    $('ic-chat').src = img('chat');
     $('ic-sair').src = img('fechar');
     $('painel-fechar').style.backgroundImage = 'url(' + img('fechar') + ')';
     $('painel-fechar').style.backgroundColor = 'var(--rosa)';
@@ -54,9 +55,10 @@
     $('txt-moedas').textContent = U.num(s.moedas);
     $('txt-nivel').textContent = s.nivel;
     $('txt-estagio').textContent = CH.estado.estagio().nome;
-    const frac = U.clamp(s.xp / CH.estado.xpProximo(), 0, 1);
+    const maximo = s.nivel >= CH.estado.NIVEL_MAX;
+    const frac = maximo ? 1 : U.clamp(s.xp / CH.estado.xpProximo(), 0, 1);
     $('anel-xp').setAttribute('stroke-dashoffset', CIRC_XP * (1 - frac));
-    $('nivel').setAttribute('aria-label', 'Nível ' + s.nivel + ', ' + Math.floor(frac * 100) + '% para o próximo');
+    $('nivel').setAttribute('aria-label', maximo ? 'Nível ' + s.nivel + ', o máximo' : 'Nível ' + s.nivel + ', ' + Math.floor(frac * 100) + '% para o próximo');
     document.querySelectorAll('.stat').forEach((el) => {
       const v = s.status[el.dataset.k];
       const anel = el.querySelector('.valor-anel');

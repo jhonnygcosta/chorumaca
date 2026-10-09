@@ -522,6 +522,16 @@
     };
   });
 
+  // Balão de conversa do chat.
+  DES.chat = (ctx) => {
+    f(ctx, '#FFFFFF', (c) => {
+      c.moveTo(22, 18); c.lineTo(78, 18); c.quadraticCurveTo(92, 18, 92, 32); c.lineTo(92, 58);
+      c.quadraticCurveTo(92, 72, 78, 72); c.lineTo(46, 72); c.lineTo(26, 88); c.lineTo(30, 72); c.lineTo(22, 72);
+      c.quadraticCurveTo(8, 72, 8, 58); c.lineTo(8, 32); c.quadraticCurveTo(8, 18, 22, 18); c.closePath();
+    });
+    [30, 50, 70].forEach((x, i) => circulo(ctx, x, 45, 6.5, ['#F24B64', '#FFCB6E', '#5B8E9C'][i], 3));
+  };
+
   DES.vr_icone = (ctx) => {
     ret(ctx, 10, 30, 80, 42, 16, '#F2F0EE');
     ret(ctx, 18, 38, 64, 26, 10, '#2E2A33', 3);

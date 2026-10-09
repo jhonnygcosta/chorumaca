@@ -1,0 +1,12 @@
+{
+  "name": "chorumaca",
+  "private": true,
+  "description": "Chorumaçã O Jogo! — bichinho virtual no navegador",
+  "scripts": {
+    "servidor": "node servidor.mjs 8080",
+    "montar": "python3 dev/montar.py"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

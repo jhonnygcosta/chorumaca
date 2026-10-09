@@ -5,6 +5,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { networkInterfaces } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { presenca, lerChat, enviarChat, lerCorpo, lojaMemoria } from './api/logica.mjs';
 
 const RAIZ = path.dirname(fileURLToPath(import.meta.url));
 const PORTA = Number(process.argv[2] || process.env.PORTA || 8080);
@@ -29,7 +30,47 @@ const PERMITIDO = /^(index\.html|manifest\.webmanifest|(css|js|assets\/jogo)\/[^
 
 const vistos = new Set();
 
+// Chat e contador de pessoas online também funcionam aqui, guardados na memória
+// enquanto o servidor estiver ligado (no Netlify, ficam no Netlify Blobs).
+const loja = lojaMemoria();
+
+function lerTexto(req) {
+  return new Promise((ok) => {
+    let t = '';
+    req.setEncoding('utf8');
+    req.on('data', (p) => { t += p; if (t.length > 4000) req.destroy(); });
+    req.on('end', () => ok(t));
+    req.on('error', () => ok(''));
+  });
+}
+
+async function api(req, res, caminho) {
+  const responder = (r) => {
+    res.writeHead(r.status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    res.end(JSON.stringify(r.json));
+  };
+  if (caminho === '/api/presenca' && req.method === 'POST') {
+    const corpo = lerCorpo(await lerTexto(req));
+    return responder(corpo ? await presenca(loja, corpo, Date.now()) : { status: 400, json: { erro: 'Pedido inválido.' } });
+  }
+  if (caminho === '/api/chat' && req.method === 'GET') {
+    const depois = new URL(req.url, 'http://local').searchParams.get('depois') || '';
+    return responder(await lerChat(loja, depois));
+  }
+  if (caminho === '/api/chat' && req.method === 'POST') {
+    const corpo = lerCorpo(await lerTexto(req));
+    return responder(corpo ? await enviarChat(loja, corpo, Date.now()) : { status: 400, json: { erro: 'Pedido inválido.' } });
+  }
+  res.writeHead(405);
+  res.end();
+}
+
 const servidor = http.createServer(async (req, res) => {
+  const so = (req.url || '').split('?')[0];
+  if (so === '/api/presenca' || so === '/api/chat') {
+    try { await api(req, res, so); } catch { res.writeHead(500); res.end(); }
+    return;
+  }
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     res.writeHead(405, { Allow: 'GET, HEAD' });
     res.end();

@@ -589,6 +589,7 @@
     }, 700);
     resumoAusencia(G.resumo);
     bonusDiario();
+    if (CH.online) CH.online.iniciar();
   }
 
   async function iniciar() {

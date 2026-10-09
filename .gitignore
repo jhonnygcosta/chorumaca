@@ -1,3 +1,6 @@
+# dependências do Node
+node_modules/
+
 # gerados pelo dev/montar.py e dev/publicar.py
 dist/
 publicar/
