@@ -385,7 +385,8 @@
       const jan = { w: 210, h: 170 };
       jan.x = L.W > 700 ? L.cx - 105 : L.cx - 105;
       jan.y = L.chao - 420;
-      const roupa = L.W > 820 ? { x: L.cx + 420, y: L.chao + 26 - 420, w: 210, h: 420 } : null;
+      // largura útil = 2 × centro (deitado, desconta a coluna de botões)
+      const roupa = L.cx * 2 >= 1270 ? { x: L.cx + 420, y: L.chao + 26 - 420, w: 210, h: 420 } : null;
       const inter = { x: cri.x - 40, y: L.chao - 230, w: 34, h: 50 };
       return { cama, cri, jan, roupa, inter };
     },
@@ -718,7 +719,7 @@
   function fundo(id, L, s, dpr) {
     const sala = C[id];
     const extra = sala.chave ? sala.chave() : '';
-    const chave = [L.W, L.H, s, dpr, extra].join('|');
+    const chave = [L.W, L.H, L.cx, L.base, s, dpr, extra].join('|');
     let c = caches[id];
     if (c && c.chave === chave) return c.cv;
     const cv = (c && c.cv) || document.createElement('canvas');

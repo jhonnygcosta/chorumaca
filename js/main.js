@@ -40,11 +40,14 @@
     const acoesEl = $('acoes');
     const coluna = getComputedStyle(acoesEl).flexDirection === 'column';
     const acoes = acoesEl.getBoundingClientRect();
-    const faixa = $('faixa').getBoundingClientRect();
+    // a faixa anima com escala ao trocar de cômodo: mede pela posição parada
+    const fx = $('faixa');
+    const faixaBaixo = fx.offsetHeight > 10 ? fx.offsetTop + fx.offsetHeight : 0;
     const altAcoes = coluna ? 0 : (acoes.height > 10 ? h - acoes.top : 110);
     const larguraColuna = coluna && acoes.width > 10 ? Math.max(0, w - acoes.left) : 0;
-    const topoLivre = faixa.bottom > 10 ? faixa.bottom + 6 : 200;
-    const baseCss = h - altAcoes - (coluna ? Math.max(14, h * 0.04) : Math.max(44, h * 0.075));
+    const topoLivre = faixaBaixo ? faixaBaixo + 6 : 200;
+    const seguroBaixo = coluna ? Math.max(0, (parseFloat(getComputedStyle(acoesEl).paddingBottom) || 10) - 10) : 0;
+    const baseCss = h - altAcoes - (coluna ? Math.max(14, h * 0.04) + 24 + seguroBaixo : Math.max(44, h * 0.075));
     const disponivel = Math.max(80, baseCss - topoLivre);
     const s = Math.max(0.2, Math.min((disponivel * 0.8) / ALTURA_ADULTA, (w - larguraColuna) / LARGURA_CENA, 1));
     G.s = s;
@@ -220,7 +223,10 @@
     if (ui.gaveta.aberta) {
       const topo = $('gaveta').getBoundingClientRect().top / G.s;
       const boca = G.L.base - (85 - 26) * G.k();
-      alvo = Math.max(0, boca + 70 - topo);
+      const hud = $('hud').getBoundingClientRect().bottom / G.s;
+      const alturaTopo = (G.choru.cabeca ? 253 : 221) * G.k();
+      const maxSubida = Math.max(0, G.L.base - alturaTopo - hud - 6);
+      alvo = Math.min(Math.max(0, boca + 70 - topo), maxSubida);
     }
     G.subida = U.aproximar(G.subida, alvo, 10, dt);
   }
@@ -631,7 +637,7 @@
     layout();
     ui.atualizar();
     requestAnimationFrame(quadro);
-    $('btn-jogar').addEventListener('click', comecar);
+    $('btn-jogar').addEventListener('click', comecar, { once: true });
     // letras do título com leve balanço, como na capa
     document.querySelectorAll('.titulo-capa span').forEach((sp) => {
       const r = U.mulberry32(sp.textContent.length * 31);

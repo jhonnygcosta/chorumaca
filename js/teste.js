@@ -32,7 +32,11 @@
       const ir = ui.el('button', 'botao verde', 'Ir');
       ir.type = 'button';
       ir.onclick = () => {
-        E.definirNivel(inp.value);
+        if (!E.definirNivel(inp.value)) {
+          ui.toast('Digite um nível de 1 a ' + E.NIVEL_MAX);
+          inp.value = String(E.s.nivel);
+          return;
+        }
         inp.value = String(E.s.nivel);
         ui.atualizar();
         ui.toast('Agora no nível ' + E.s.nivel, 'i_estrela');

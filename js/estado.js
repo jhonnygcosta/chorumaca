@@ -54,6 +54,10 @@
     r.contagem = Object.assign(novo().contagem, dados.contagem || {});
     r.inventario = dados.inventario || {};
     r.caquinhas = Array.isArray(dados.caquinhas) ? dados.caquinhas : [];
+    // saves de antes do teto de nível e dos avisos de jogo novo
+    r.nivel = U.clamp(Math.round(Number(r.nivel)) || 1, 1, NIVEL_MAX);
+    r.xp = r.nivel >= NIVEL_MAX ? 0 : Math.max(0, Number(r.xp) || 0);
+    if (!('boasVindas' in dados)) r.boasVindas = true;
     return r;
   }
 
@@ -257,10 +261,15 @@
 
     // Vai direto pra um nível (ferramentas de teste). Não dá moedas.
     definirNivel(n) {
-      s.nivel = U.clamp(Math.round(Number(n) || 1), 1, NIVEL_MAX);
+      const v = Math.round(Number(n));
+      if (n === '' || n == null || !Number.isFinite(v)) return false;
+      const alvo = U.clamp(v, 1, NIVEL_MAX);
+      if (alvo === s.nivel) return true;
+      s.nivel = alvo;
       s.xp = 0;
       CH.ev.emit('xp');
       E.salvar();
+      return true;
     },
 
     xpProximo() { return 50 * s.nivel; },

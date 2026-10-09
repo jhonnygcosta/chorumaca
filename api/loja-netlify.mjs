@@ -1,4 +1,4 @@
-// Adapta o Netlify Blobs às quatro operações que a lógica do chat usa.
+// Adapta o Netlify Blobs às operações que a lógica do chat usa.
 // Consistência forte: quem manda uma mensagem já a vê na leitura seguinte.
 export function loja(getStore) {
   const st = getStore({ name: 'chorumaca-online', consistency: 'strong' });
@@ -10,5 +10,17 @@ export function loja(getStore) {
       return blobs.map((b) => b.key);
     },
     del: (k) => st.delete(k),
+    // grava só se a chave ainda não existe (atômico no Netlify Blobs 10+)
+    criar: async (k, v) => {
+      const r = await st.setJSON(k, v, { onlyIfNew: true });
+      return !r || r.modified !== false;
+    },
   };
+}
+
+// Roda uma tarefa depois da resposta, quando o Netlify oferece isso; senão, espera ela.
+export async function emSegundoPlano(context, tarefa) {
+  const p = Promise.resolve().then(tarefa).catch(() => {});
+  if (context && typeof context.waitUntil === 'function') context.waitUntil(p);
+  else await p;
 }

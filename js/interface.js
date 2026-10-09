@@ -167,6 +167,7 @@
       b.type = 'button';
       b.className = 'acao' + (a.classe ? ' ' + a.classe : '');
       b.dataset.id = a.id;
+      b.setAttribute('aria-label', a.rotulo);
       b.innerHTML = '<div class="bola"><img alt="" src="' + img(a.icone) + '"></div><span>' + a.rotulo + '</span>';
       if (a.toque) b.addEventListener('click', (e) => { CH.som.botao(); a.toque(e, b); });
       if (a.segurar) {
@@ -302,7 +303,8 @@
     const w = b.offsetWidth;
     const min = 16 + w / 2, max = window.innerWidth - 16 - w / 2;
     b.style.left = U.clamp(x, min, Math.max(min, max)) + 'px';
-    b.style.top = Math.max(y, b.offsetHeight + 8) + 'px';
+    const hud = $('hud').hidden ? 0 : $('hud').getBoundingClientRect().bottom;
+    b.style.top = Math.max(y, b.offsetHeight + 8, hud + b.offsetHeight + 4) + 'px';
   };
   ui.esconderBalao = function () { $('balao').hidden = true; };
 

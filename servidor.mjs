@@ -5,7 +5,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { networkInterfaces } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { presenca, lerChat, enviarChat, lerCorpo, lojaMemoria } from './api/logica.mjs';
+import { presenca, lerChat, enviarChat, podar, lerCorpo, lojaMemoria } from './api/logica.mjs';
 
 const RAIZ = path.dirname(fileURLToPath(import.meta.url));
 const PORTA = Number(process.argv[2] || process.env.PORTA || 8080);
@@ -45,21 +45,24 @@ function lerTexto(req) {
 }
 
 async function api(req, res, caminho) {
+  const ip = (req.socket.remoteAddress || '').replace('::ffff:', '');
+  const agora = Date.now();
+  if (Math.random() < 0.1) podar(loja, agora).catch(() => {});
   const responder = (r) => {
     res.writeHead(r.status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
     res.end(JSON.stringify(r.json));
   };
   if (caminho === '/api/presenca' && req.method === 'POST') {
     const corpo = lerCorpo(await lerTexto(req));
-    return responder(corpo ? await presenca(loja, corpo, Date.now()) : { status: 400, json: { erro: 'Pedido inválido.' } });
+    return responder(corpo ? await presenca(loja, corpo, agora, ip) : { status: 400, json: { erro: 'Pedido inválido.' } });
   }
   if (caminho === '/api/chat' && req.method === 'GET') {
-    const depois = new URL(req.url, 'http://local').searchParams.get('depois') || '';
-    return responder(await lerChat(loja, depois));
+    const q = new URL(req.url, 'http://local').searchParams;
+    return responder(await lerChat(loja, { depois: q.get('depois') || '', id: q.get('id') || '' }, agora, ip));
   }
   if (caminho === '/api/chat' && req.method === 'POST') {
     const corpo = lerCorpo(await lerTexto(req));
-    return responder(corpo ? await enviarChat(loja, corpo, Date.now()) : { status: 400, json: { erro: 'Pedido inválido.' } });
+    return responder(corpo ? await enviarChat(loja, corpo, agora, ip) : { status: 400, json: { erro: 'Pedido inválido.' } });
   }
   res.writeHead(405);
   res.end();
