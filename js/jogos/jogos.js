@@ -20,6 +20,19 @@
   let dicaTimer = null;
   let reabrir = null;
 
+  // Mede as margens seguras (notch, ilha e barra de gestos) em px.
+  let sonda = null;
+  function seguros() {
+    if (!sonda) {
+      sonda = document.createElement('div');
+      sonda.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;' +
+        'padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+      document.body.appendChild(sonda);
+    }
+    const cs = getComputedStyle(sonda);
+    return { t: parseFloat(cs.paddingTop) || 0, d: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, e: parseFloat(cs.paddingLeft) || 0 };
+  }
+
   function medir() {
     const w = window.innerWidth, h = window.innerHeight;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -28,7 +41,9 @@
     if (api) {
       api.W = w; api.H = h; api.dpr = dpr;
       api.u = Math.min(w, h * 0.62) / 100;
-      api.topo = 70 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topo-seguro')) || 0);
+      const sg = seguros();
+      api.topo = 70 + sg.t;
+      api.segE = sg.e; api.segD = sg.d; api.segB = sg.b;
     }
   }
 
@@ -92,16 +107,30 @@
     const b = api.balao;
     if (!b || api.t > b.ate || !api.choru.ultimo) return;
     const p = api.choru.mundo(10, -118);
+    const area = api.balaoArea || { x1: 16, x2: api.W - 16 };
+    const larguraMax = Math.max(80, area.x2 - area.x1);
     ctx.save();
-    ctx.font = '20px "Gochi Hand", cursive';
-    const w = Math.min(api.W - 32, ctx.measureText(b.txt).width + 28);
-    const x = U.clamp(p.x, 16 + w / 2, api.W - 16 - w / 2), y = Math.max(api.topo + 50, p.y - 14 - (api.offY || 0));
+    const tam = larguraMax < 200 ? 17 : 20;
+    ctx.font = tam + 'px "Gochi Hand", cursive';
+    // quebra o texto em linhas por palavra
+    const linhas = [];
+    let atual = '';
+    b.txt.split(' ').forEach((pal) => {
+      const teste = atual ? atual + ' ' + pal : pal;
+      if (atual && ctx.measureText(teste).width + 24 > larguraMax) { linhas.push(atual); atual = pal; } else atual = teste;
+    });
+    if (atual) linhas.push(atual);
+    const lh = tam * 1.05;
+    const w = Math.min(larguraMax, Math.max(...linhas.map((l) => ctx.measureText(l).width)) + 24);
+    const h = linhas.length * lh + 14;
+    const x = U.clamp(p.x, area.x1 + w / 2, area.x2 - w / 2);
+    const base = Math.max(api.topo + 14 + h, p.y - 14 - (api.offY || 0));
     ctx.beginPath();
-    U.ret(ctx, x - w / 2, y - 40, w, 36, 16);
+    U.ret(ctx, x - w / 2, base - h, w, h, 14);
     ctx.fillStyle = '#FFFFFF'; ctx.fill();
     U.tinta(ctx, 3); ctx.stroke();
     ctx.fillStyle = U.TINTA; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(b.txt, x, y - 21, w - 20);
+    linhas.forEach((l, i) => ctx.fillText(l, x, base - h + 7 + lh * (i + 0.5), w - 12));
     ctx.restore();
   }
 
@@ -197,7 +226,18 @@
   });
 
   window.addEventListener('resize', () => { if (api) { medir(); if (api.def.redimensionar) api.def.redimensionar(api); } });
-  document.addEventListener('visibilitychange', () => { if (api) api.pausado = document.hidden; ultimo = performance.now(); });
+  // Ao perder o foco ou ir pro fundo, solta teclas e dedos segurados (o "soltar" se perde).
+  function soltarTudo() { if (api && api.def.soltarTudo) api.def.soltarTudo(api); }
+  window.addEventListener('blur', soltarTudo);
+  document.addEventListener('visibilitychange', () => {
+    if (api) {
+      api.pausado = document.hidden;
+      if (document.hidden) soltarTudo();
+      else if (!api.fim) CH.som.tocar(api.def.musica || 'jogo', true);
+    }
+    ultimo = performance.now();
+  });
+  cv.addEventListener('contextmenu', (e) => e.preventDefault());
 
   // Fundo em espiral rosa, como a capa da campanha.
   J.espiral = function (c, W, H, t, cx, cy, cores = ['#FFE7EB', '#F7A6B5']) {

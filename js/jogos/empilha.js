@@ -27,20 +27,18 @@
   const CORES = { I: '#F24B64', O: '#FFCB6E', T: '#8C6FB8', S: '#8CC657', Z: '#FFB287', J: '#5B8E9C', L: '#E8823A' };
   const TIPOS = Object.keys(FORMAS);
 
-  // Giro horário da matriz; cada peça guarda as 4 posições como listas de células.
-  function girarMatriz(m) {
-    const n = m.length;
-    return m.map((linha, r) => linha.map((_, c) => m[n - 1 - c][r]));
-  }
+  // Cada peça guarda as 4 posições (giro horário dentro da caixa da peça) como listas
+  // de células. A ordem dos blocos se mantém entre as posições, então o bloco da moeda
+  // continua sendo o mesmo quando a peça gira.
   const ESTADOS = {};
   TIPOS.forEach((t) => {
-    let m = FORMAS[t];
+    const n = FORMAS[t].length;
+    let cel = [];
+    FORMAS[t].forEach((linha, y) => linha.forEach((v, x) => { if (v) cel.push([x, y]); }));
     ESTADOS[t] = [];
     for (let r = 0; r < 4; r++) {
-      const cel = [];
-      m.forEach((linha, y) => linha.forEach((v, x) => { if (v) cel.push([x, y]); }));
       ESTADOS[t].push(cel);
-      m = girarMatriz(m);
+      cel = cel.map(([x, y]) => [n - 1 - y, x]);
     }
   });
 
@@ -165,6 +163,7 @@
       if (!colide(a, p, p.x + kx, p.y - ky, para)) {
         p.x += kx; p.y -= ky; p.rot = para;
         CH.som.girar();
+        if (p.y > a.maisBaixo) { a.maisBaixo = p.y; a.ajustes = 0; a.travaT = 0; }
         ajustouNoChao(a);
         return true;
       }
@@ -195,7 +194,6 @@
   function nascer(a) {
     a.peca = novaPeca(a.proxima);
     a.proxima = proximoTipo(a);
-    a.proximaMoeda = U.chance(0.12);
     a.maisBaixo = a.peca.y;
     a.ajustes = 0;
     a.travaT = 0;
@@ -299,8 +297,10 @@
     CH.som.botao();
   }
 
+  // Nível e linhas ficam no painel ao lado do tabuleiro; a pílula do topo fica escondida
+  // pra não estourar a largura em celulares de 360 px.
   function atualizarInfo(a) {
-    a.info('Nível ' + a.nivel + ' · ' + a.linhas + (a.linhas === 1 ? ' linha' : ' linhas'));
+    a.info('');
   }
 
   function toque() {
@@ -320,14 +320,15 @@
     const topo = a.topo + 8;
     const margem = 12;
     const ctrlH = deitado ? 0 : Math.round(U.clamp(a.H * 0.15, 88, 132));
-    const hDisp = a.H - topo - ctrlH - margem * 2;
-    const ladoCtrl = deitado ? Math.min(150, a.W * 0.17) : 0;
-    const wDisp = a.W - margem * 2 - ladoCtrl * 2;
+    const hDisp = a.H - topo - ctrlH - margem * 2 - (a.segB || 0);
+    const segE = a.segE || 0, segD = a.segD || 0, segB = a.segB || 0;
+    const ladoCtrl = deitado ? Math.min(150, (a.W - segE - segD) * 0.17) : 0;
+    const wDisp = a.W - margem * 2 - segE - segD - ladoCtrl * 2;
     const cel = Math.max(8, Math.floor(Math.min(hDisp / LINHAS, wDisp / (COLS + 5.4), 38)));
     const bw = cel * COLS, bh = cel * LINHAS;
     const gap = Math.round(cel * 0.6);
     const pw = Math.round(cel * 4.8);
-    const x0 = Math.round((a.W - (bw + gap + pw)) / 2);
+    const x0 = Math.round(segE + (a.W - segE - segD - (bw + gap + pw)) / 2);
     const y0 = Math.round(topo + margem + (hDisp - bh) / 2);
     const px = x0 + bw + gap;
 
@@ -335,8 +336,8 @@
     const botoes = [];
     const ids = ['esq', 'dir', 'girar', 'descer', 'cair'];
     if (deitado) {
-      const r = Math.min(34, ladoCtrl * 0.28, a.H * 0.1);
-      const cx1 = margem + ladoCtrl / 2, cx2 = a.W - margem - ladoCtrl / 2;
+      const r = Math.min(34, ladoCtrl / 4.3, a.H * 0.1);
+      const cx1 = margem + segE + ladoCtrl / 2, cx2 = a.W - margem - segD - ladoCtrl / 2;
       const meio = a.H * 0.62;
       botoes.push({ id: 'esq', x: cx1 - r * 1.15, y: meio, r });
       botoes.push({ id: 'dir', x: cx1 + r * 1.15, y: meio, r });
@@ -346,7 +347,7 @@
     } else {
       const larg = Math.min(a.W - margem * 2, 520);
       const r = Math.min(ctrlH * 0.36, larg / 12);
-      const cy = a.H - ctrlH / 2 - margem * 0.5;
+      const cy = a.H - segB - ctrlH / 2 - margem * 0.5;
       ids.forEach((id, i) => botoes.push({ id, x: a.W / 2 - larg / 2 + larg * (i + 0.5) / 5, y: cy, r }));
     }
     return { cel, bw, bh, x0, y0, px, pw, gap, botoes, deitado };
@@ -357,9 +358,10 @@
   }
 
   function botoesMenu(g) {
-    const lado = Math.min(g.bw * 0.4, 110);
+    const compacto = g.cel < 16;
+    const lado = Math.min(g.bw * 0.4, 110, compacto ? g.bh * 0.24 : 999);
     const esp = lado * 0.16;
-    const cx = g.x0 + g.bw / 2, cy = g.y0 + g.bh * 0.68;
+    const cx = g.x0 + g.bw / 2, cy = g.y0 + g.bh * (compacto ? 0.55 : 0.68);
     return NIVEIS_INICIAIS.map((n, i) => ({
       n,
       x: cx + (i % 2 ? esp / 2 : -esp / 2 - lado),
@@ -383,7 +385,11 @@
   }
 
   function soltarBotao(a, id) {
-    if ((id === 'esq' || id === 'dir') && a.das && a.das.d === (id === 'esq' ? -1 : 1)) a.das = null;
+    if ((id === 'esq' || id === 'dir') && a.das && a.das.d === (id === 'esq' ? -1 : 1)) {
+      a.das = null;
+      const outra = id === 'esq' ? 'dir' : 'esq';
+      if (Object.values(a.dedos).includes(outra) || a.teclas[outra]) a.das = { d: outra === 'esq' ? -1 : 1, t: 0, rep: 0 };
+    }
     if (id === 'descer') a.suave = false;
   }
 
@@ -404,6 +410,7 @@
       a.nivel = 0; a.linhas = 0; a.nivelInicial = 0;
       a.gotas = []; a.textos = [];
       a.dedos = {};
+      a.teclas = {};
       a.gesto = null;
       a.das = null; a.suave = false;
       a.acc = 0; a.travaT = 0; a.espera = 0;
@@ -414,7 +421,16 @@
 
     sair() { CH.som.andamento(1); },
 
+    soltarTudo(a) {
+      a.das = null;
+      a.suave = false;
+      a.dedos = {};
+      a.teclas = {};
+      a.gesto = null;
+    },
+
     apertar(a, x, y, e) {
+      if (e && e.pointerType === 'mouse' && e.button !== 0) return;
       const g = geo(a);
       if (a.estado === 'menu') {
         const b = botoesMenu(g).find((m) => x >= m.x && x <= m.x + m.w && y >= m.y && y <= m.y + m.h);
@@ -438,11 +454,16 @@
     mover(a, x, y, e) {
       const ge = a.gesto;
       if (!ge || e.pointerId !== ge.id || a.estado !== 'jogando') return;
+      if (e.pointerType === 'mouse' && !(e.buttons & 1)) {
+        if (ge.descendo) a.suave = false;
+        a.gesto = null;
+        return;
+      }
       const g = geo(a);
       const dx = x - ge.x0, dy = y - ge.y0;
       if (Math.abs(dx) > 8 || Math.abs(dy) > 8) ge.moveu = true;
       // arrastar pros lados move coluna por coluna, seguindo o dedo
-      if (!ge.descendo) {
+      if (!ge.descendo && ge.moveu) {
         const alvo = Math.round(dx / (g.cel * 0.9));
         while (ge.colunas < alvo && mover(a, 1)) ge.colunas++;
         while (ge.colunas > alvo && mover(a, -1)) ge.colunas--;
@@ -484,6 +505,7 @@
       const rep = e && e.repeat;
       if (k === 'ArrowLeft' || k === 'ArrowRight') {
         const id = k === 'ArrowLeft' ? 'esq' : 'dir';
+        if (!rep) a.teclas[id] = desce;
         if (desce && !rep) pressionar(a, id);
         if (!desce) soltarBotao(a, id);
       } else if (k === 'ArrowDown') {
@@ -507,7 +529,7 @@
       a.tremor = Math.max(0, a.tremor - dt);
 
       // humor da Chorú
-      const perigo = a.estado === 'jogando' && alturaPilha(a) < 6;
+      const perigo = a.estado === 'jogando' && !a.fim && alturaPilha(a) < 6;
       if (perigo !== a.perigo) {
         a.perigo = perigo;
         CH.som.andamento(perigo ? 1.2 : 1);
@@ -545,7 +567,8 @@
 
       // gravidade
       const passo = a.suave ? Math.min(QUEDA_SUAVE, segundosPorLinha(a.nivel)) : segundosPorLinha(a.nivel);
-      a.acc += dt;
+      // ao ligar a queda suave, o saldo da gravidade lenta não vira várias linhas de uma vez
+      a.acc = Math.min(a.acc, passo) + dt;
       while (a.acc >= passo) {
         a.acc -= passo;
         if (descer1(a)) {
@@ -560,7 +583,7 @@
       if (noChao(a)) {
         a.travaT += dt;
         if (a.travaT >= TRAVA) travar(a);
-      } else {
+      } else if (a.ajustes < MAX_AJUSTES) {
         a.travaT = 0;
       }
     },
@@ -636,12 +659,19 @@
           c.lineWidth = Math.max(1.5, cel * 0.08); c.strokeStyle = 'rgba(39,35,34,0.45)'; c.stroke();
           c.restore();
         });
+      }
+      c.restore();
+
+      // peça atual: pode aparecer uma linha acima do tabuleiro, por cima da moldura
+      if (a.peca && a.estado === 'jogando') {
+        c.save();
+        c.beginPath(); c.rect(g.x0, g.y0 - cel, g.bw, g.bh + cel); c.clip();
         celulas(a.peca).forEach(([x, y], i) => {
           if (y < OCULTAS - 1) return;
           bloco(c, ox + x * cel, oy + y * cel, cel, CORES[a.peca.tipo], i === a.peca.moeda);
         });
+        c.restore();
       }
-      c.restore();
 
       // grade do tabuleiro
       c.beginPath();
@@ -742,6 +772,11 @@
     const olhar = a.peca ? { x: g.x0 + (a.peca.x + 1.5) * cel, y: g.y0 + (a.peca.y - OCULTAS + 1) * cel } : null;
     a.choru.olhar = olhar;
     a.choru.desenhar(c, x + w / 2, g.y0 + g.bh, k, {});
+    // o balão de fala da Chorú fica do lado do tabuleiro, sem cobrir as peças
+    const limiteDir = g.deitado
+      ? Math.min(...g.botoes.filter((b) => b.id === 'girar' || b.id === 'cair').map((b) => b.x - b.r)) - 6
+      : a.W - 8 - (a.segD || 0);
+    a.balaoArea = { x1: g.px - 4, x2: Math.max(g.px + w + 4, limiteDir) };
   }
 
   function desenharBotoes(a, c, g) {
@@ -788,27 +823,38 @@
     c.save();
     c.fillStyle = 'rgba(255,253,248,0.82)';
     c.fillRect(g.x0, g.y0, g.bw, g.bh);
+    const compacto = g.cel < 16;
     const tam = Math.max(20, g.bw * 0.13);
-    CH.cenarios.texto(c, 'TETRIS', cx, g.y0 + g.bh * 0.17, tam * 1.35, '#F24B64', '#FFFFFF', -0.06);
-    // peças de enfeite
-    const s = g.cel * 0.8;
-    ['T', 'S', 'L'].forEach((tp, i) => {
-      ESTADOS[tp][0].forEach(([x, y]) => bloco(c, g.x0 + g.bw * (0.16 + i * 0.27) + x * s, g.y0 + g.bh * 0.3 + y * s, s, CORES[tp], tp === 'S' && x === 1 && y === 0));
-    });
-    CH.cenarios.texto(c, 'Escolha o nível', cx, g.y0 + g.bh * 0.47, Math.max(14, g.bw * 0.07), '#272322', null);
+    CH.cenarios.texto(c, 'TETRIS', cx, g.y0 + g.bh * (compacto ? 0.1 : 0.17), tam * (compacto ? 1.05 : 1.35), '#F24B64', '#FFFFFF', -0.06);
+    // peças de enfeite (só quando sobra espaço)
+    if (!compacto) {
+      const s = g.cel * 0.8;
+      ['T', 'S', 'L'].forEach((tp, i) => {
+        ESTADOS[tp][0].forEach(([x, y]) => bloco(c, g.x0 + g.bw * (0.16 + i * 0.27) + x * s, g.y0 + g.bh * 0.3 + y * s, s, CORES[tp], tp === 'S' && x === 1 && y === 0));
+      });
+    }
+    CH.cenarios.texto(c, 'Escolha o nível', cx, g.y0 + g.bh * (compacto ? 0.25 : 0.47), Math.max(compacto ? 12 : 14, g.bw * 0.07), '#272322', null);
     botoesMenu(g).forEach((b) => {
       c.beginPath(); U.ret(c, b.x, b.y + 4, b.w, b.h, 12); c.fillStyle = T; c.fill();
       c.beginPath(); U.ret(c, b.x, b.y, b.w, b.h, 12);
       U.pinta(c, b.n === 0 ? '#5B8E9C' : b.n < 6 ? '#8CC657' : b.n < 9 ? '#FFCB6E' : '#F24B64', 3.5);
       CH.cenarios.texto(c, String(b.n), b.x + b.w / 2, b.y + b.h / 2, b.h * 0.55, '#FFFFFF', T);
     });
-    // como jogar
-    const tamDica = Math.max(11, Math.min(16, g.bw * 0.058));
-    const dicas = toque()
+    // como jogar, montado de baixo pra cima a partir do recorde
+    let tamDica = Math.max(10, Math.min(16, g.bw * 0.058));
+    c.font = tamDica + 'px "Lilita One", sans-serif';
+    let dicas = toque()
       ? ['Toque no tabuleiro: girar', 'Arraste: mover · Deslize pra baixo: cair']
       : ['← → mover · ↑ girar', '↓ descer · espaço: cair'];
-    dicas.forEach((d, i) => CH.cenarios.texto(c, d, cx, g.y0 + g.bh * 0.86 + i * tamDica * 1.35, tamDica, '#4B6765', null));
-    CH.cenarios.texto(c, 'Recorde: ' + U.num(CH.estado.s.recordes.empilha || 0), cx, g.y0 + g.bh * 0.96, Math.max(12, g.bw * 0.055), '#272322', null);
+    const larga = () => Math.max(...dicas.map((d) => c.measureText(d).width)) > g.bw - 8;
+    if (larga()) {
+      dicas = toque() ? ['Toque: girar', 'Arraste: mover', 'Deslize pra baixo: cair'] : ['← → mover', '↑ girar · ↓ descer', 'espaço: cair'];
+      while (larga() && tamDica > 9) { tamDica -= 0.5; c.font = tamDica + 'px "Lilita One", sans-serif'; }
+    }
+    const tamRec = Math.max(11, Math.min(15, g.bw * 0.055));
+    const yRec = g.y0 + g.bh - tamRec * 0.9;
+    CH.cenarios.texto(c, 'Recorde: ' + U.num(CH.estado.s.recordes.empilha || 0), cx, yRec, tamRec, '#272322', null);
+    dicas.forEach((d, i) => CH.cenarios.texto(c, d, cx, yRec - tamRec * 0.9 - (dicas.length - i - 0.5) * tamDica * 1.25, tamDica, '#4B6765', null));
     c.restore();
   }
 })(window.CH);
