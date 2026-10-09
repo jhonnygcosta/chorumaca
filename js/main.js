@@ -87,6 +87,7 @@
     ch.suor = s.apertada > 0 || s.status.saude < 30;
     ch.sujeira = U.clamp((72 - s.status.higiene) / 72, 0, 1);
     ch.mosquinhas = s.status.higiene < 20;
+    ch.fedor = U.aproximar(ch.fedor, s.status.higiene < 15 ? 1 : 0, 3, 1 / 60);
     ch.doente = U.aproximar(ch.doente, s.status.saude < 30 ? 1 : 0, 2, 1 / 60);
     if (s.dormindo) return 'dormindo';
     if (G.expTemp && G.t < G.expTemp.ate) return G.expTemp.nome;
@@ -496,6 +497,7 @@
           irParaSemTransicao('cozinha');
           ui.atualizar();
           ui.toast('Jogo recomeçado');
+          boasVindas();
         };
         f.appendChild(zerar);
         c.appendChild(f);
@@ -571,6 +573,16 @@
     }, 700);
   }
 
+  // Na primeira vez (jogo novo ou recomeçado), explica o que a Chorú precisa.
+  function boasVindas() {
+    const s = E.s;
+    if (s.boasVindas) return;
+    s.boasVindas = true;
+    E.salvar();
+    setTimeout(() => ui.toast('A Chorú chegou toda cagada e com fome!', 'caquinha'), 1800);
+    setTimeout(() => ui.toast('Limpe as caquinhas, dê banho, comida e remédio', 'sabonete'), 4600);
+  }
+
   function comecar() {
     CH.som.iniciar();
     CH.som.configurar(E.s.config);
@@ -589,6 +601,7 @@
     }, 700);
     resumoAusencia(G.resumo);
     bonusDiario();
+    boasVindas();
     if (CH.online) CH.online.iniciar();
   }
 

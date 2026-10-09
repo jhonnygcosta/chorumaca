@@ -485,7 +485,7 @@
       ultimo: null,          // transformação do último desenho, para conversões
       pele: 'classica', cabeca: null, olhos: null,
       espuma: [], molhada: 0,
-      sujeira: 0, doente: 0, suor: false, mosquinhas: false,
+      sujeira: 0, doente: 0, suor: false, mosquinhas: false, fedor: 0,
     };
 
     inst.expressao = function (nome) {
@@ -747,6 +747,28 @@
       }
 
       ctx.restore();
+
+      // ondinhas de fedor
+      if (inst.fedor > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, inst.fedor);
+        for (let i = 0; i < 3; i++) {
+          const ph = (t * 0.55 + i / 3) % 1;
+          const bx = x + (-62 + i * 62) * k;
+          const by = yb - inst.pulo - (150 + ph * 70) * k;
+          ctx.globalAlpha = Math.min(1, inst.fedor) * Math.sin(ph * Math.PI);
+          ctx.beginPath();
+          for (let s = 0; s <= 10; s++) {
+            const yy = by - s * 4 * k;
+            const xx = bx + Math.sin(s * 0.9 + t * 4 + i) * 7 * k;
+            if (s === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+          }
+          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          ctx.lineWidth = 7 * k; ctx.strokeStyle = T; ctx.stroke();
+          ctx.lineWidth = 3.6 * k; ctx.strokeStyle = '#A7C25E'; ctx.stroke();
+        }
+        ctx.restore();
+      }
 
       // mosquinhas da sujeira
       if (inst.mosquinhas) {

@@ -9,16 +9,23 @@
   const STATUS = ['fome', 'higiene', 'energia', 'diversao', 'saude'];
   const NIVEL_MAX = 100;
 
+  // Jogo novo (ou "Recomeçar do zero"): a Chorú chega toda cagada, fedorenta, com fome,
+  // sem diversão e com a saúde baixa. Só a energia vem cheia, pra dar conta de tudo.
   function novo() {
     const agora = Date.now();
     return {
       v: 1,
       criado: agora,
       ultimo: agora,
-      status: { fome: 70, higiene: 80, energia: 85, diversao: 70, saude: 100 },
-      vontade: 20,
+      status: { fome: 12, higiene: 5, energia: 100, diversao: 18, saude: 22 },
+      vontade: 0,
       apertada: 0,           // segundos restantes até a caquinha; 0 = não está apertada
-      caquinhas: [],          // { id, comodo, x, t }
+      caquinhas: [           // { id, comodo, x, t }
+        { id: 'inicio1', comodo: 'cozinha', x: -0.3, t: agora },
+        { id: 'inicio2', comodo: 'cozinha', x: 0.33, t: agora },
+        { id: 'inicio3', comodo: 'banheiro', x: 0.27, t: agora },
+      ],
+      boasVindas: false,
       dormindo: false,
       comodo: 'cozinha',
       moedas: 100,
@@ -28,7 +35,7 @@
       receitas: [],
       roupas: { possui: ['classica'], cabeca: null, olhos: null, cor: 'classica' },
       recordes: { chuva: 0, pulo: 0, biruleibe: 0, passeio: 0, empilha: 0 },
-      bonusDia: '',
+      bonusDia: U.hoje(),     // o bônus diário começa no dia seguinte
       config: { som: true, musica: true },
       contagem: { comidas: 0, banhos: 0, jogos: 0, passeios: 0 },
     };
